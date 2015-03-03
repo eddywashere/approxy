@@ -1,6 +1,6 @@
 {
   "name": "approxy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An express middleware that proxies requests for clientside apps",
   "main": "index.js",
   "scripts": {
