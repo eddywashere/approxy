@@ -1,0 +1,27 @@
+{
+  "name": "approxy",
+  "version": "1.0.0",
+  "description": "An express middleware that proxies requests for clientside apps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:eddywashere/approxy.git"
+  },
+  "keywords": [
+    "proxy",
+    "spa"
+  ],
+  "author": "Eddy Hernandez <edward.d.hernandez@gmail.com> (http://eddywashere.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eddywashere/approxy/issues"
+  },
+  "homepage": "https://github.com/eddywashere/approxy",
+  "dependencies": {
+    "http-proxy": "^1.8.1",
+    "validator": "^3.32.0"
+  }
+}
