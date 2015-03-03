@@ -23,5 +23,8 @@
     "morgan": "^1.5.1",
     "multer": "^0.1.8",
     "node-uuid": "^1.4.2"
+  },
+  "engines": {
+    "node": "0.10.x"
   }
 }

@@ -23,5 +23,8 @@
   "dependencies": {
     "http-proxy": "^1.8.1",
     "validator": "^3.32.0"
+  },
+  "engines": {
+    "node": "0.10.x"
   }
 }
