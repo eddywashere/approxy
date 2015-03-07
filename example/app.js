@@ -16,6 +16,10 @@ morgan.token('id', function getId(req) {
   return req.id;
 });
 
+morgan.token('remote-addr', function getId(req) {
+  return req.ipAddress || req.ip;
+});
+
 var app = express();
 
 app.use(cors());
@@ -29,19 +33,24 @@ app.use(function(req, res, next){
   // set the right ip
   if (req.headers['x-forwarded-for']) {
       var list = req.headers['x-forwarded-for'].split(",");
-      req.ip = list[list.length-1];
+      req.ipAddress = list[list.length-1];
    } else if (req.socket && req.socket.remoteAddress) {
-      req.ip = req.socket.remoteAddress;
+      req.ipAddress = req.socket.remoteAddress;
    } else if (req.socket && req.socket.socket && req.socket.socket.remoteAddress) {
-      req.ip = req.socket.socket.remoteAddress;
+      req.ipAddress = req.socket.socket.remoteAddress;
    } else {
-    req.ip = req.connection.remoteAddress;
+    req.ipAddress = req.connection.remoteAddress;
    }
 
   next();
 });
 
-app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" ":id" ":req[x-approxy-url]" ":response-time"'));
+app.use(function(req, res, next) {
+  if (req.headers['user-agent'] && req.headers['user-agent'].indexOf('monitoring.api.rackspacecloud.com') >= 0) {
+    return next();
+  }
+  return morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" ":id" ":req[x-approxy-url]" ":response-time"')(req, res, next);
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
