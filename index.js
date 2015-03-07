@@ -9,7 +9,11 @@ proxy = new httpProxy.createProxyServer(),
 Approxy;
 
 Approxy = function(customOptions){
-  var self = this;
+  var self = this,
+  urlOptions = {
+    protocols: ['https', 'http'],
+    require_protocol: true
+  };
 
   self.options = {};
 
@@ -17,6 +21,14 @@ Approxy = function(customOptions){
     for(var i in customOptions){
       self.options[i] = customOptions[i];
     }
+  }
+
+  if(self.options.whitelist){
+    urlOptions.host_whitelist;
+  }
+
+  if(self.options.blacklist){
+    urlOptions.host_blacklist;
   }
 
   self.getValueByString = function (o, s) {
@@ -33,7 +45,9 @@ Approxy = function(customOptions){
   };
 
   self.middleware = function (req, res, next) {
-    var error, endpointInfo, target, proxyUrl, validUrl;
+    var validUrl = false,
+    validMatch = false,
+    error, endpointInfo, target, proxyUrl;
 
     // Handle body parser issues (not needed for multipart content)
     if(req.headers['content-type'] && req.headers['content-type'].indexOf('multipart/form-data') < 0){
@@ -60,7 +74,7 @@ Approxy = function(customOptions){
 
     // validate url
     proxyUrl = validator.trim(proxyUrl);
-    validUrl = validator.isURL(proxyUrl, {protocols: ['https', 'http']});
+    validUrl = validator.isURL(proxyUrl, urlOptions);
 
     if(!validUrl){
       error = new Error('Error Reading Proxy Url');
@@ -73,7 +87,15 @@ Approxy = function(customOptions){
     target = endpointInfo.protocol + '//' + endpointInfo.host;
     req.url = endpointInfo.pathname;
 
-    // Fix "Error: socket hang up" by removing content-length headers
+    // validate url with regex
+    if(self.options.matches){
+      validMatch = validator.matches(target, self.options.matches);
+      if(!validMatch){
+        error = new Error('Error Matching Proxy Url');
+        self.emit('proxyError', error);
+        return next(error);
+      }
+    }
     delete req.headers['content-length'];
     delete req.headers['keep-alive'];
 
