@@ -108,12 +108,11 @@ Approxy = function(customOptions){
         return next(error);
       }
     }
+
+    // Fix "Error: socket hang up" & other random errors by removing the following headers
+    delete req.headers.host;
     delete req.headers['content-length'];
     delete req.headers['keep-alive'];
-
-    if (self.options.userAgent){
-      req.headers['user-agent'] = self.options.userAgent;
-    }
 
     proxy.web(req, res, {
       target: target
