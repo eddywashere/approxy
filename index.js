@@ -44,6 +44,18 @@ Approxy = function(customOptions){
     return o;
   };
 
+  proxy.on('start', function(req, res, target){
+    self.emit('proxyStart', req, res, target);
+  });
+
+  proxy.on('end', function(req, res, proxyRes){
+    self.emit('proxyEnd', req, res, proxyRes);
+  });
+
+  proxy.on('error', function (err) {
+    self.emit('proxyError', err);
+  });
+
   self.middleware = function (req, res, next) {
     var validUrl = false,
     validMatch = false,
@@ -102,19 +114,6 @@ Approxy = function(customOptions){
     if (self.options.userAgent){
       req.headers['user-agent'] = self.options.userAgent;
     }
-
-    proxy.on('start', function(req, res, target){
-      self.emit('proxyStart', req, res, target);
-    });
-
-    proxy.on('end', function(req, res, proxyRes){
-      self.emit('proxyEnd', req, res, proxyRes);
-    });
-
-    proxy.on('error', function (err) {
-      self.emit('proxyError', err);
-      next(err);
-    });
 
     proxy.web(req, res, {
       target: target
