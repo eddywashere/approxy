@@ -3,18 +3,18 @@ methodOverride = require('method-override'),
 cors = require('cors'),
 express = require('express'),
 morgan = require('morgan'),
+multer  = require('multer'),
 uuid = require('node-uuid'),
 Approxy = require('approxy'),
-approxy = new Approxy({
-  userAgent: 'Proxied Via Approxy'
-});
+approxy = new Approxy();
 
-var multer  = require('multer');
+approxy.on('proxyError',function(err){
+  console.log('PROXY ERROR', err.message);
+});
 
 morgan.token('id', function getId(req) {
   return req.id;
 });
-
 
 var app = express();
 
@@ -22,8 +22,22 @@ app.use(cors());
 
 // configure Express
 app.use(function(req, res, next){
+  // add request id
   req.id = uuid.v4();
-  req.headers['x-approxy-request-id'] = req.id;
+  res.set('x-approxy-id', req.id);
+
+  // set the right ip
+  if (req.headers['x-forwarded-for']) {
+      var list = req.headers['x-forwarded-for'].split(",");
+      req.ip = list[list.length-1];
+   } else if (req.socket && req.socket.remoteAddress) {
+      req.ip = req.socket.remoteAddress;
+   } else if (req.socket && req.socket.socket && req.socket.socket.remoteAddress) {
+      req.ip = req.socket.socket.remoteAddress;
+   } else {
+    req.ip = req.connection.remoteAddress;
+   }
+
   next();
 });
 
@@ -59,8 +73,11 @@ app.use(function(req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-  console.error(err);
-  res.send(err.status || 500);
+  console.error(err.status);
+  if (!err.status){
+    err.status = 500;
+  }
+  res.status(err.status).send(err.message || 'Internal Error');
 });
 
 var port = Number(process.env.PORT || 3000);
